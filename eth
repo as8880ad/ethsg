@@ -1,0 +1,49 @@
+const fs = require('fs');
+const { execSync } = require('child_process');
+
+// 指定生成的代码包数量和基础包名
+const packageCount = 3;
+const basePackageName = 'my-package';
+
+// 指定自定义的配置和依赖项
+const customConfig = {
+  author: 'Your Name',
+  license: 'MIT',
+  description: 'My custom package',
+};
+
+const customDependencies = ['lodash', 'axios'];
+
+// 循环生成代码包
+for (let i = 1; i <= packageCount; i++) {
+  const packageName = `${basePackageName}-${i}`;
+  const packagePath = `./${packageName}`;
+
+  // 创建代码包文件夹
+  fs.mkdirSync(packagePath);
+
+  // 初始化npm包
+  execSync('npm init -y', { cwd: packagePath });
+
+  // 更新package.json文件
+  const packageJsonPath = `${packagePath}/package.json`;
+  const packageJson = require(packageJsonPath);
+
+  packageJson.author = customConfig.author;
+  packageJson.license = customConfig.license;
+  packageJson.description = customConfig.description;
+
+  packageJson.dependencies = Object.assign(
+    packageJson.dependencies || {},
+    customDependencies.reduce((deps, dep) => {
+      deps[dep] = '*';
+      return deps;
+    }, {})
+  );
+
+  fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+
+  console.log(`Package ${packageName} generated successfully.`);
+}
+
+console.log('Batch generation completed.');
